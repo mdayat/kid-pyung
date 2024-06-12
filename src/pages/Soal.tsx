@@ -9,9 +9,9 @@ import { RichTextEditor } from "../components/RichTextEditor";
 
 export function Soal(): JSX.Element {
   const [soalQuill, setSoalQuill] = useState<Quill>();
+  const [pembahasanQuill, setPembahasanQuill] = useState<Quill>();
   function submitCreateSoal(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    console.log(soalQuill);
   }
 
   function checkIDSoal() {}
@@ -53,8 +53,22 @@ export function Soal(): JSX.Element {
           <Form.Label as="p">Teks Editor Soal</Form.Label>
           <RichTextEditor
             setEditorInstance={setSoalQuill as Dispatch<SetStateAction<Quill>>}
-            editorID="soal_editor"
-            toolbarID="soal_toolbar"
+            editorID="soal-editor"
+            toolbarID="soal-toolbar"
+          />
+        </Accordion.Body>
+      </Accordion.Item>
+
+      <Accordion.Item eventKey="1">
+        <Accordion.Header>Pembahasan</Accordion.Header>
+        <Accordion.Body as={Form.Group}>
+          <Form.Label as="p">Teks Editor Pembahasan</Form.Label>
+          <RichTextEditor
+            setEditorInstance={
+              setPembahasanQuill as Dispatch<SetStateAction<Quill>>
+            }
+            editorID="pembahasan-editor"
+            toolbarID="pembahasan-toolbar"
           />
         </Accordion.Body>
       </Accordion.Item>
