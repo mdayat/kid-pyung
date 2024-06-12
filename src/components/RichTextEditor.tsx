@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Quill from "quill";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -16,15 +16,22 @@ export function RichTextEditor({
   toolbarID,
   setEditorInstance,
 }: RichTextEditorProps): JSX.Element {
+  const runOnce = useRef(true);
   useEffect(() => {
-    const quill = new Quill(`#${editorID}`, {
-      modules: {
-        toolbar: `#${toolbarID}`,
-      },
-      placeholder: "Klik untuk mengetik...",
-      theme: "snow",
-    });
-    setEditorInstance(quill);
+    if (runOnce.current) {
+      const quill = new Quill(`#${editorID}`, {
+        modules: {
+          toolbar: `#${toolbarID}`,
+        },
+        placeholder: "Klik untuk mengetik...",
+        theme: "snow",
+      });
+      setEditorInstance(quill);
+    }
+
+    return () => {
+      runOnce.current = false;
+    };
   }, [editorID, toolbarID, setEditorInstance]);
 
   return (
@@ -46,7 +53,7 @@ export function RichTextEditor({
         </span>
       </div>
 
-      <div id={editorID} className="[&_img]:w-96 [&_img]:py-2"></div>
+      <div id={editorID} className="[&_img]:w-96"></div>
     </>
   );
 }

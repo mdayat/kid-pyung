@@ -4,8 +4,8 @@ import Accordion from "react-bootstrap/Accordion";
 import Form from "react-bootstrap/Form";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 
-import { RichTextEditor } from "../components/RichTextEditor";
 import { SoalEditor } from "../components/SoalEditor";
+import { RichTextEditor } from "../components/RichTextEditor";
 
 export default function Soal(): JSX.Element {
   const [soalQuill, setSoalQuill] = useState<Quill>();
@@ -23,8 +23,9 @@ export default function Soal(): JSX.Element {
     >
       <Accordion.Item eventKey="0">
         <Accordion.Header>Soal</Accordion.Header>
-        <Accordion.Body>
+        <Accordion.Body className="pb-10">
           <SoalEditor
+            soalQuill={soalQuill as Quill}
             setSoalQuill={setSoalQuill as Dispatch<SetStateAction<Quill>>}
           />
         </Accordion.Body>

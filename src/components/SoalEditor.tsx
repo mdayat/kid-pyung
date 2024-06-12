@@ -6,16 +6,38 @@ import type { Dispatch, SetStateAction } from "react";
 import type Quill from "quill";
 
 import { RichTextEditor } from "./RichTextEditor";
+import { deltaToHTMLString } from "../utils/quill";
 
 interface SoalEditorProps {
+  soalQuill: Quill;
   setSoalQuill: Dispatch<SetStateAction<Quill>>;
 }
 
-export function SoalEditor({ setSoalQuill }: SoalEditorProps): JSX.Element {
+export function SoalEditor({
+  soalQuill,
+  setSoalQuill,
+}: SoalEditorProps): JSX.Element {
   function checkIDSoal() {}
 
+  function viewSoalPreview(eventKey: string | null) {
+    const divEl = document.getElementById("soal-preview") as HTMLDivElement;
+    if (eventKey === "preview") {
+      const htmlString = deltaToHTMLString(soalQuill.getContents());
+      divEl.insertAdjacentHTML("beforeend", htmlString);
+    } else {
+      divEl.innerHTML = "";
+    }
+  }
+
   return (
-    <Tabs justify id="soal-form" defaultActiveKey="editor" className="mb-4">
+    <Tabs
+      onSelect={viewSoalPreview}
+      justify
+      id="soal-form"
+      defaultActiveKey="editor"
+      variant="underline"
+      className="mb-4"
+    >
       <Tab eventKey="editor" title="Editor">
         <Form.Group controlId="soal_id" className="max-w-sm mb-6">
           <div className="flex justify-start items-center gap-x-6">
@@ -24,6 +46,7 @@ export function SoalEditor({ setSoalQuill }: SoalEditorProps): JSX.Element {
               type="text"
               placeholder="Masukkan ID Soal..."
               autoComplete="off"
+              className="placeholder:text-sm"
             />
 
             <Button
@@ -52,7 +75,9 @@ export function SoalEditor({ setSoalQuill }: SoalEditorProps): JSX.Element {
         </Form.Group>
       </Tab>
 
-      <Tab eventKey="preview" title="Preview"></Tab>
+      <Tab eventKey="preview" title="Preview">
+        <div id="soal-preview" className="border !p-4 [&_img]:w-96"></div>
+      </Tab>
     </Tabs>
   );
 }
