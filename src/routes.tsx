@@ -1,8 +1,10 @@
+import { Suspense, lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import { RootLayout } from "./RootLayout";
 import { Home } from "./pages/Home";
-import { Soal } from "./pages/Soal";
+
+const Soal = lazy(() => import("./pages/Soal"));
 
 export const router = createBrowserRouter([
   {
@@ -13,9 +15,14 @@ export const router = createBrowserRouter([
         index: true,
         element: <Home />,
       },
+
       {
         path: "soal",
-        element: <Soal />,
+        element: (
+          <Suspense fallback={<h1>Loading...</h1>}>
+            <Soal />
+          </Suspense>
+        ),
       },
     ],
   },
