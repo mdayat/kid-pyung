@@ -8,13 +8,13 @@ import "quill/dist/quill.snow.css";
 interface RichTextEditorProps {
   editorID: string;
   toolbarID: string;
-  setEditorInstance: Dispatch<SetStateAction<Quill>>;
+  setQuillInstance: Dispatch<SetStateAction<Quill>>;
 }
 
 export function RichTextEditor({
   editorID,
   toolbarID,
-  setEditorInstance,
+  setQuillInstance,
 }: RichTextEditorProps): JSX.Element {
   const runOnce = useRef(true);
   useEffect(() => {
@@ -26,13 +26,13 @@ export function RichTextEditor({
         placeholder: "Klik untuk mengetik...",
         theme: "snow",
       });
-      setEditorInstance(quill);
+      setQuillInstance(quill);
     }
 
     return () => {
       runOnce.current = false;
     };
-  }, [editorID, toolbarID, setEditorInstance]);
+  }, [editorID, toolbarID, setQuillInstance]);
 
   return (
     <>

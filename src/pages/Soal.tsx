@@ -5,7 +5,7 @@ import Form from "react-bootstrap/Form";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 
 import { SoalEditor } from "../components/SoalEditor";
-import { RichTextEditor } from "../components/RichTextEditor";
+import { PembahasanEditor } from "../components/PembahasanEditor";
 
 export default function Soal(): JSX.Element {
   const [soalQuill, setSoalQuill] = useState<Quill>();
@@ -25,22 +25,20 @@ export default function Soal(): JSX.Element {
         <Accordion.Header>Soal</Accordion.Header>
         <Accordion.Body className="pb-10">
           <SoalEditor
-            soalQuill={soalQuill as Quill}
-            setSoalQuill={setSoalQuill as Dispatch<SetStateAction<Quill>>}
+            quillInstance={soalQuill as Quill}
+            setQuillInstance={setSoalQuill as Dispatch<SetStateAction<Quill>>}
           />
         </Accordion.Body>
       </Accordion.Item>
 
       <Accordion.Item eventKey="1">
         <Accordion.Header>Pembahasan</Accordion.Header>
-        <Accordion.Body as={Form.Group}>
-          <Form.Label as="p">Teks Editor Pembahasan</Form.Label>
-          <RichTextEditor
-            setEditorInstance={
+        <Accordion.Body>
+          <PembahasanEditor
+            quillInstance={pembahasanQuill as Quill}
+            setQuillInstance={
               setPembahasanQuill as Dispatch<SetStateAction<Quill>>
             }
-            editorID="pembahasan-editor"
-            toolbarID="pembahasan-toolbar"
           />
         </Accordion.Body>
       </Accordion.Item>

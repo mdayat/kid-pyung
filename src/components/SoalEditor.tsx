@@ -9,20 +9,20 @@ import { RichTextEditor } from "./RichTextEditor";
 import { deltaToHTMLString } from "../utils/quill";
 
 interface SoalEditorProps {
-  soalQuill: Quill;
-  setSoalQuill: Dispatch<SetStateAction<Quill>>;
+  quillInstance: Quill;
+  setQuillInstance: Dispatch<SetStateAction<Quill>>;
 }
 
 export function SoalEditor({
-  soalQuill,
-  setSoalQuill,
+  quillInstance,
+  setQuillInstance,
 }: SoalEditorProps): JSX.Element {
   function checkIDSoal() {}
 
-  function viewSoalPreview(eventKey: string | null) {
+  function showEditorPreview(eventKey: string | null) {
     const divEl = document.getElementById("soal-preview") as HTMLDivElement;
     if (eventKey === "preview") {
-      const htmlString = deltaToHTMLString(soalQuill.getContents());
+      const htmlString = deltaToHTMLString(quillInstance.getContents());
       divEl.insertAdjacentHTML("beforeend", htmlString);
     } else {
       divEl.innerHTML = "";
@@ -31,7 +31,7 @@ export function SoalEditor({
 
   return (
     <Tabs
-      onSelect={viewSoalPreview}
+      onSelect={showEditorPreview}
       justify
       id="soal-form"
       defaultActiveKey="editor"
@@ -68,7 +68,7 @@ export function SoalEditor({
         <Form.Group>
           <Form.Label as="p">Teks Editor Soal</Form.Label>
           <RichTextEditor
-            setEditorInstance={setSoalQuill}
+            setQuillInstance={setQuillInstance}
             editorID="soal-editor"
             toolbarID="soal-toolbar"
           />
