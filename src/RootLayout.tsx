@@ -18,7 +18,7 @@ export function RootLayout(): JSX.Element {
         </Nav>
       </Navbar>
 
-      <main className="max-w-screen-md mx-auto mt-8">
+      <main className="max-w-screen-md mx-auto my-8">
         <Outlet />
       </main>
     </>
