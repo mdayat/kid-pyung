@@ -22,54 +22,56 @@ function deltaToHTMLString(delta: Delta): string {
   return HTMLString;
 }
 
-interface ImageData {
-  id: string;
+interface TaggedImage {
+  tag: string;
   encodedImage: string;
 }
 
-type EditorData = [modifiedDelta: Delta, imagesData: ImageData[]];
-type IDType =
-  | "soal"
-  | "pembahasan"
-  | "jawaban1"
-  | "jawaban2"
-  | "jawaban3"
-  | "jawaban4"
-  | "jawaban5";
+interface ExtractedDelta {
+  delta: Delta;
+  taggedImages: TaggedImage[];
+}
 
-function replaceBase64ImageWithID(delta: Delta, IDType: IDType): EditorData {
-  const editorData: EditorData = [delta, []];
+function replaceBase64ImageWithTag(
+  imageTag: string,
+  delta: Delta
+): ExtractedDelta {
+  const extractedDelta: ExtractedDelta = { delta, taggedImages: [] };
   let imageNumber = 1;
 
+  // Get encoded image of delta and replace it with imageTag.
+  // The obtained encoded image is tagged with imageTag.
   for (let i = 0; i < delta.ops.length; i++) {
     const insert = delta.ops[i].insert;
     const hasImageKey = typeof insert === "object" && "image" in insert;
 
     if (hasImageKey) {
-      const imageData: ImageData = {
-        id: `${IDType}-${imageNumber}`,
+      const taggedImage: TaggedImage = {
+        tag: `${imageTag}-${imageNumber}`,
         encodedImage: insert.image as string,
       };
 
-      editorData[1].push(imageData);
-      insert.image = `${IDType}-${imageNumber}`;
+      extractedDelta.taggedImages.push(taggedImage);
+      insert.image = taggedImage.tag;
       imageNumber++;
     }
   }
 
-  return editorData;
+  return extractedDelta;
 }
 
-interface BlobPromiseData {
-  imageID: string;
+interface TaggedBlob {
+  tag: string;
   blob: Blob;
 }
 
-function base64ToBlob(
-  imageID: string,
+// Create promise of blob along with its tag (blobTag).
+// blobTag is used to identify each blob and it's useful when used with multipart/form-data.
+function base64ToBlobWithTag(
+  blobTag: string,
   encodedImage: string
-): Promise<BlobPromiseData> {
-  const promise = new Promise<BlobPromiseData>((resolve) => {
+): Promise<TaggedBlob> {
+  const promise = new Promise<TaggedBlob>((resolve) => {
     const base64Image = encodedImage.split("base64,")[1];
     let binaryString = "";
 
@@ -85,10 +87,11 @@ function base64ToBlob(
     }
 
     const blob = new Blob([bytes], { type: "image/png" });
-    resolve({ imageID, blob });
+    resolve({ tag: blobTag, blob });
   });
 
   return promise;
 }
 
-export { deltaToHTMLString, replaceBase64ImageWithID, base64ToBlob };
+export { deltaToHTMLString, replaceBase64ImageWithTag, base64ToBlobWithTag };
+export type { TaggedImage, TaggedBlob };

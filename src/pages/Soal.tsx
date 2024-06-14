@@ -1,32 +1,20 @@
 import { useEffect, useState } from "react";
-import Quill from "quill";
 import Accordion from "react-bootstrap/Accordion";
 import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import type Quill from "quill";
+import type { Delta } from "quill/core";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 
 import { SoalEditor } from "../components/SoalEditor";
 import { PembahasanEditor } from "../components/PembahasanEditor";
 import { JawabanEditor } from "../components/JawabanEditor";
-
-function generateJawabanEditorProps(
-  quillInstances: Quill[],
-  setQuillInstances: Dispatch<SetStateAction<Quill>>[]
-) {
-  const jawaban = new Array(5);
-  for (let i = 0; i < jawaban.length; i++) {
-    jawaban[i] = {
-      quillInstance: quillInstances[i],
-      setQuillInstance: setQuillInstances[i],
-    };
-  }
-  return jawaban;
-}
-
-function beforeUnloadHandler(event: BeforeUnloadEvent) {
-  event.preventDefault();
-  // Included for legacy support
-  event.returnValue = true;
-}
+import {
+  beforeUnloadHandler,
+  createSoal,
+  generateJawabanEditorProps,
+} from "../utils/soal";
+import type { Editor } from "../utils/soal";
 
 export default function Soal(): JSX.Element {
   const [soalQuill, setSoalQuill] = useState<Quill>();
@@ -38,8 +26,24 @@ export default function Soal(): JSX.Element {
   const [jawaban4Quill, setJawaban4Quill] = useState<Quill>();
   const [jawaban5Quill, setJawaban5Quill] = useState<Quill>();
 
-  function submitCreateSoal(event: FormEvent<HTMLFormElement>) {
+  function submitCreateSoalHandler(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const editors: Editor[] = [
+      { type: "soal", delta: soalQuill?.getContents() as Delta },
+      { type: "pembahasan", delta: pembahasanQuill?.getContents() as Delta },
+      {
+        type: "jawaban",
+        deltas: [
+          jawaban1Quill?.getContents() as Delta,
+          jawaban2Quill?.getContents() as Delta,
+          jawaban3Quill?.getContents() as Delta,
+          jawaban4Quill?.getContents() as Delta,
+          jawaban5Quill?.getContents() as Delta,
+        ],
+      },
+    ];
+
+    createSoal(editors);
   }
 
   useEffect(() => {
@@ -52,7 +56,7 @@ export default function Soal(): JSX.Element {
   return (
     <Accordion
       as={Form}
-      onSubmit={submitCreateSoal}
+      onSubmit={submitCreateSoalHandler}
       action=""
       defaultActiveKey="0"
     >
@@ -101,6 +105,10 @@ export default function Soal(): JSX.Element {
           />
         </Accordion.Body>
       </Accordion.Item>
+
+      <Button type="submit" className="block mx-auto mt-6">
+        Buat Soal
+      </Button>
     </Accordion>
   );
 }
