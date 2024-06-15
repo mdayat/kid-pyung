@@ -1,23 +1,37 @@
+import { useRef } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import type Quill from "quill";
 
 import { RichTextEditor } from "./RichTextEditor";
 import { deltaToHTMLString } from "../utils/quill";
 
 interface SoalEditorProps {
+  soalIDRef: RefObject<HTMLInputElement>;
   quillInstance: Quill;
   setQuillInstance: Dispatch<SetStateAction<Quill>>;
 }
 
 export function SoalEditor({
+  soalIDRef,
   quillInstance,
   setQuillInstance,
 }: SoalEditorProps): JSX.Element {
-  function checkIDSoal() {}
+  const soalIDDescRef = useRef<HTMLElement>(null);
+  const registeredIDText = "ID soal sudah terdaftar!";
+  const unregisteredIDText = "Setiap ID pada soal harus unik.";
+
+  function checkIDSoal() {
+    setTimeout(() => {
+      const smallEl = soalIDDescRef.current as HTMLElement;
+      smallEl.classList.replace("text-muted", "text-red-600");
+      smallEl.classList.add("italic");
+      smallEl.textContent = registeredIDText;
+    }, 1000);
+  }
 
   function showEditorPreview(eventKey: string | null) {
     const divEl = document.getElementById("soal-preview") as HTMLDivElement;
@@ -42,6 +56,7 @@ export function SoalEditor({
         <Form.Group controlId="soal_id" className="max-w-sm mb-6">
           <div className="flex justify-start items-center gap-x-6">
             <Form.Control
+              ref={soalIDRef}
               required
               type="text"
               placeholder="Masukkan ID Soal..."
@@ -60,8 +75,11 @@ export function SoalEditor({
             </Button>
           </div>
 
-          <Form.Text className="text-muted">
-            Setiap ID pada soal harus unik.
+          <Form.Text
+            ref={soalIDDescRef}
+            className="text-muted transition-all duration-300"
+          >
+            {unregisteredIDText}
           </Form.Text>
         </Form.Group>
 

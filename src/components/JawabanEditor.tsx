@@ -53,7 +53,22 @@ export function JawabanEditor({ jawaban }: JawabanEditorProps): JSX.Element {
             key={`jawaban${index + 1}-rich-text-editor`}
             className="mb-6 last:mb-0"
           >
-            <Form.Label as="p">Teks Editor Jawaban {index + 1}</Form.Label>
+            <div className="flex justify-between items-center mb-3">
+              <Form.Label as="p" className="mb-0">
+                Teks Editor Jawaban {index + 1}
+              </Form.Label>
+
+              <Form.Check
+                required
+                id={`jawaban${index + 1}`}
+                value={`jawaban${index + 1}`}
+                type="radio"
+                name="jawaban-benar"
+                label="Pilih Sebagai Jawaban Benar"
+                className="[&_*]:cursor-pointer mb-0"
+              />
+            </div>
+
             <RichTextEditor
               setQuillInstance={setQuillInstance}
               editorID={`jawaban${index + 1}-editor`}

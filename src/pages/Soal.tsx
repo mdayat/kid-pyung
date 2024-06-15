@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Accordion from "react-bootstrap/Accordion";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -9,14 +9,11 @@ import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { SoalEditor } from "../components/SoalEditor";
 import { PembahasanEditor } from "../components/PembahasanEditor";
 import { JawabanEditor } from "../components/JawabanEditor";
-import {
-  beforeUnloadHandler,
-  createSoal,
-  generateJawabanEditorProps,
-} from "../utils/soal";
-import type { Editor } from "../utils/soal";
+import { beforeUnloadHandler, createSoal } from "../utils/soal";
+import type { Editor, TaggedDelta } from "../utils/soal";
 
 export default function Soal(): JSX.Element {
+  const soalIDRef = useRef<HTMLInputElement>(null);
   const [soalQuill, setSoalQuill] = useState<Quill>();
   const [pembahasanQuill, setPembahasanQuill] = useState<Quill>();
 
@@ -28,22 +25,38 @@ export default function Soal(): JSX.Element {
 
   function submitCreateSoalHandler(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const jawabanDeltas = [
+      jawaban1Quill?.getContents() as Delta,
+      jawaban2Quill?.getContents() as Delta,
+      jawaban3Quill?.getContents() as Delta,
+      jawaban4Quill?.getContents() as Delta,
+      jawaban5Quill?.getContents() as Delta,
+    ];
+
+    // The delta of each jawaban is tagged by jawabanTag variable.
+    const taggedDeltas: TaggedDelta[] = [];
+    for (let i = 0; i < jawabanDeltas.length; i++) {
+      const jawabanTag = `jawaban${i + 1}`;
+      taggedDeltas.push({ tag: jawabanTag, delta: jawabanDeltas[i] });
+    }
+
     const editors: Editor[] = [
       { type: "soal", delta: soalQuill?.getContents() as Delta },
       { type: "pembahasan", delta: pembahasanQuill?.getContents() as Delta },
       {
         type: "jawaban",
-        deltas: [
-          jawaban1Quill?.getContents() as Delta,
-          jawaban2Quill?.getContents() as Delta,
-          jawaban3Quill?.getContents() as Delta,
-          jawaban4Quill?.getContents() as Delta,
-          jawaban5Quill?.getContents() as Delta,
-        ],
+        taggedDeltas,
       },
     ];
 
-    createSoal(editors);
+    const formData = new FormData(event.currentTarget);
+    const jawabanBenarTag = formData.get("jawaban-benar");
+
+    createSoal(
+      (soalIDRef.current as HTMLInputElement).value as string,
+      jawabanBenarTag as string,
+      editors
+    );
   }
 
   useEffect(() => {
@@ -64,6 +77,7 @@ export default function Soal(): JSX.Element {
         <Accordion.Header>Soal</Accordion.Header>
         <Accordion.Body className="pb-10">
           <SoalEditor
+            soalIDRef={soalIDRef}
             quillInstance={soalQuill as Quill}
             setQuillInstance={setSoalQuill as Dispatch<SetStateAction<Quill>>}
           />
@@ -86,22 +100,38 @@ export default function Soal(): JSX.Element {
         <Accordion.Header>Jawaban</Accordion.Header>
         <Accordion.Body>
           <JawabanEditor
-            jawaban={generateJawabanEditorProps(
-              [
-                jawaban1Quill as Quill,
-                jawaban2Quill as Quill,
-                jawaban3Quill as Quill,
-                jawaban4Quill as Quill,
-                jawaban5Quill as Quill,
-              ],
-              [
-                setJawaban1Quill as Dispatch<SetStateAction<Quill>>,
-                setJawaban2Quill as Dispatch<SetStateAction<Quill>>,
-                setJawaban3Quill as Dispatch<SetStateAction<Quill>>,
-                setJawaban4Quill as Dispatch<SetStateAction<Quill>>,
-                setJawaban5Quill as Dispatch<SetStateAction<Quill>>,
-              ]
-            )}
+            jawaban={[
+              {
+                quillInstance: jawaban1Quill as Quill,
+                setQuillInstance: setJawaban1Quill as Dispatch<
+                  SetStateAction<Quill>
+                >,
+              },
+              {
+                quillInstance: jawaban2Quill as Quill,
+                setQuillInstance: setJawaban2Quill as Dispatch<
+                  SetStateAction<Quill>
+                >,
+              },
+              {
+                quillInstance: jawaban3Quill as Quill,
+                setQuillInstance: setJawaban3Quill as Dispatch<
+                  SetStateAction<Quill>
+                >,
+              },
+              {
+                quillInstance: jawaban4Quill as Quill,
+                setQuillInstance: setJawaban4Quill as Dispatch<
+                  SetStateAction<Quill>
+                >,
+              },
+              {
+                quillInstance: jawaban5Quill as Quill,
+                setQuillInstance: setJawaban5Quill as Dispatch<
+                  SetStateAction<Quill>
+                >,
+              },
+            ]}
           />
         </Accordion.Body>
       </Accordion.Item>

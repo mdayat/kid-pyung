@@ -1,7 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
-import type Quill from "quill";
 import type { Delta } from "quill/core";
-
 import { replaceBase64ImageWithTag, base64ToBlobWithTag } from "./quill";
 import type { TaggedBlob, TaggedImage } from "./quill";
 
@@ -13,16 +10,14 @@ interface TaggedDelta {
 type Editor =
   | { type: "soal"; delta: Delta }
   | { type: "pembahasan"; delta: Delta }
-  | { type: "jawaban"; deltas: Delta[] };
-
-type ModifiedEditor =
-  | { type: "soal"; delta: Delta }
-  | { type: "pembahasan"; delta: Delta }
   | { type: "jawaban"; taggedDeltas: TaggedDelta[] };
 
-function createSoal(editors: Editor[]) {
+function createSoal(
+  soalID: string,
+  jawabanBenarTag: string,
+  editors: Editor[]
+) {
   const combinedTaggedImages: TaggedImage[] = [];
-  const modifiedEditors: ModifiedEditor[] = [];
 
   for (let i = 0; i < editors.length; i++) {
     const editor = editors[i];
@@ -32,28 +27,20 @@ function createSoal(editors: Editor[]) {
         editor.delta
       );
 
+      editor.delta = delta;
       combinedTaggedImages.push(...taggedImages);
-      modifiedEditors.push({ type: editor.type, delta });
     } else {
-      // The delta of each jawaban is tagged with the same tag as image's.
-      // The tag is annotated by jawabanTag variable.
+      // The image of each jawaban is tagged by jawaban delta tag.
       // This is to ensure each image has its corresponding delta.
-      const taggedDeltas: TaggedDelta[] = [];
-      for (let j = 0; j < editor.deltas.length; j++) {
-        const jawabanTag = `${editor.type}${j + 1}`;
+      for (let j = 0; j < editor.taggedDeltas.length; j++) {
         const { delta, taggedImages } = replaceBase64ImageWithTag(
-          jawabanTag,
-          editor.deltas[j]
+          editor.taggedDeltas[j].tag,
+          editor.taggedDeltas[j].delta
         );
 
+        editor.taggedDeltas[i].delta = delta;
         combinedTaggedImages.push(...taggedImages);
-        taggedDeltas.push({ tag: jawabanTag, delta });
       }
-
-      modifiedEditors.push({
-        type: editor.type,
-        taggedDeltas,
-      });
     }
   }
 
@@ -80,21 +67,10 @@ function createSoal(editors: Editor[]) {
     }
   });
 
-  formData.append("editors", JSON.stringify(modifiedEditors));
-}
-
-function generateJawabanEditorProps(
-  quillInstances: Quill[],
-  setQuillInstances: Dispatch<SetStateAction<Quill>>[]
-) {
-  const jawaban = new Array(5);
-  for (let i = 0; i < jawaban.length; i++) {
-    jawaban[i] = {
-      quillInstance: quillInstances[i],
-      setQuillInstance: setQuillInstances[i],
-    };
-  }
-  return jawaban;
+  formData.append(
+    "editors",
+    JSON.stringify({ soalID, jawabanBenarTag, editors })
+  );
 }
 
 function beforeUnloadHandler(event: BeforeUnloadEvent) {
@@ -103,5 +79,5 @@ function beforeUnloadHandler(event: BeforeUnloadEvent) {
   event.returnValue = true;
 }
 
-export { createSoal, generateJawabanEditorProps, beforeUnloadHandler };
-export type { Editor };
+export { createSoal, beforeUnloadHandler };
+export type { Editor, TaggedDelta };
