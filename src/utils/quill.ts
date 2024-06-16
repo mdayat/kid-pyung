@@ -70,27 +70,26 @@ interface TaggedBlob {
 function base64ToBlobWithTag(
   blobTag: string,
   encodedImage: string
-): Promise<TaggedBlob> {
-  const promise = new Promise<TaggedBlob>((resolve) => {
-    const base64Image = encodedImage.split("base64,")[1];
-    let binaryString = "";
+): () => Promise<TaggedBlob> {
+  return () =>
+    new Promise<TaggedBlob>((resolve) => {
+      const base64Image = encodedImage.split("base64,")[1];
+      let binaryString = "";
 
-    try {
-      binaryString = window.atob(base64Image);
-    } catch (err) {
-      // Log the error because it cause file corruption
-    }
+      try {
+        binaryString = window.atob(base64Image);
+      } catch (err) {
+        // Log the error because it cause file corruption
+      }
 
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < bytes.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
 
-    const blob = new Blob([bytes], { type: "image/png" });
-    resolve({ tag: blobTag, blob });
-  });
-
-  return promise;
+      const blob = new Blob([bytes], { type: "image/png" });
+      resolve({ tag: blobTag, blob });
+    });
 }
 
 export { deltaToHTMLString, replaceBase64ImageWithTag, base64ToBlobWithTag };

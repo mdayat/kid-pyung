@@ -18,7 +18,6 @@ function createSoal(
   editors: Editor[]
 ) {
   const combinedTaggedImages: TaggedImage[] = [];
-
   for (let i = 0; i < editors.length; i++) {
     const editor = editors[i];
     if (editor.type !== "jawaban") {
@@ -38,14 +37,14 @@ function createSoal(
           editor.taggedDeltas[j].delta
         );
 
-        editor.taggedDeltas[i].delta = delta;
+        editor.taggedDeltas[j].delta = delta;
         combinedTaggedImages.push(...taggedImages);
       }
     }
   }
 
   const formData = new FormData();
-  const taggedBlobPromises: Promise<TaggedBlob>[] = new Array(
+  const taggedBlobPromises: Array<() => Promise<TaggedBlob>> = new Array(
     combinedTaggedImages.length
   );
 
@@ -57,7 +56,9 @@ function createSoal(
     );
   }
 
-  Promise.all(taggedBlobPromises).then((taggedBlobs) => {
+  Promise.all(
+    taggedBlobPromises.map((taggedBlobPromise) => taggedBlobPromise())
+  ).then((taggedBlobs) => {
     for (let i = 0; i < taggedBlobs.length; i++) {
       formData.append(
         taggedBlobs[i].tag,

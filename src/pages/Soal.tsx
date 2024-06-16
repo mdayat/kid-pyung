@@ -25,12 +25,13 @@ export default function Soal(): JSX.Element {
 
   function submitCreateSoalHandler(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Deep copy the delta so it doesn't mutate its source (quill instance).
     const jawabanDeltas = [
-      jawaban1Quill?.getContents() as Delta,
-      jawaban2Quill?.getContents() as Delta,
-      jawaban3Quill?.getContents() as Delta,
-      jawaban4Quill?.getContents() as Delta,
-      jawaban5Quill?.getContents() as Delta,
+      JSON.parse(JSON.stringify(jawaban1Quill?.getContents())) as Delta,
+      JSON.parse(JSON.stringify(jawaban2Quill?.getContents())) as Delta,
+      JSON.parse(JSON.stringify(jawaban3Quill?.getContents())) as Delta,
+      JSON.parse(JSON.stringify(jawaban4Quill?.getContents())) as Delta,
+      JSON.parse(JSON.stringify(jawaban5Quill?.getContents())) as Delta,
     ];
 
     // The delta of each jawaban is tagged by jawabanTag variable.
@@ -40,9 +41,18 @@ export default function Soal(): JSX.Element {
       taggedDeltas.push({ tag: jawabanTag, delta: jawabanDeltas[i] });
     }
 
+    // Deep copy the delta so it doesn't mutate its source (quill instance).
     const editors: Editor[] = [
-      { type: "soal", delta: soalQuill?.getContents() as Delta },
-      { type: "pembahasan", delta: pembahasanQuill?.getContents() as Delta },
+      {
+        type: "soal",
+        delta: JSON.parse(JSON.stringify(soalQuill?.getContents())) as Delta,
+      },
+      {
+        type: "pembahasan",
+        delta: JSON.parse(
+          JSON.stringify(pembahasanQuill?.getContents())
+        ) as Delta,
+      },
       {
         type: "jawaban",
         taggedDeltas,
