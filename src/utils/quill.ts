@@ -27,16 +27,11 @@ interface TaggedImage {
   encodedImage: string;
 }
 
-interface ExtractedDelta {
-  delta: Delta;
-  taggedImages: TaggedImage[];
-}
-
 function replaceBase64ImageWithTag(
   imageTag: string,
   delta: Delta
-): ExtractedDelta {
-  const extractedDelta: ExtractedDelta = { delta, taggedImages: [] };
+): TaggedImage[] {
+  const taggedImages: TaggedImage[] = [];
   let imageNumber = 1;
 
   // Get encoded image of delta and replace it with imageTag.
@@ -51,24 +46,25 @@ function replaceBase64ImageWithTag(
         encodedImage: insert.image as string,
       };
 
-      extractedDelta.taggedImages.push(taggedImage);
+      taggedImages.push(taggedImage);
       insert.image = taggedImage.tag;
       imageNumber++;
     }
   }
 
-  return extractedDelta;
+  return taggedImages;
 }
 
 interface TaggedBlob {
-  tag: string;
+  imageTag: string;
   blob: Blob;
 }
 
-// Create promise of blob along with its tag (blobTag).
-// blobTag is used to identify each blob and it's useful when used with multipart/form-data.
+// Create promise of blob along with its tag (imageTag).
+// The tag is obtained from the image's tag.
+// imageTag is used to identify each blob and it's useful when used with multipart/form-data.
 function base64ToBlobWithTag(
-  blobTag: string,
+  imageTag: string,
   encodedImage: string
 ): () => Promise<TaggedBlob> {
   return () =>
@@ -88,7 +84,7 @@ function base64ToBlobWithTag(
       }
 
       const blob = new Blob([bytes], { type: "image/png" });
-      resolve({ tag: blobTag, blob });
+      resolve({ imageTag, blob });
     });
 }
 

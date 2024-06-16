@@ -21,23 +21,16 @@ function createSoal(
   for (let i = 0; i < editors.length; i++) {
     const editor = editors[i];
     if (editor.type !== "jawaban") {
-      const { delta, taggedImages } = replaceBase64ImageWithTag(
-        editor.type,
-        editor.delta
-      );
-
-      editor.delta = delta;
+      const taggedImages = replaceBase64ImageWithTag(editor.type, editor.delta);
       combinedTaggedImages.push(...taggedImages);
     } else {
       // The image of each jawaban is tagged by jawaban delta tag.
       // This is to ensure each image has its corresponding delta.
       for (let j = 0; j < editor.taggedDeltas.length; j++) {
-        const { delta, taggedImages } = replaceBase64ImageWithTag(
+        const taggedImages = replaceBase64ImageWithTag(
           editor.taggedDeltas[j].tag,
           editor.taggedDeltas[j].delta
         );
-
-        editor.taggedDeltas[j].delta = delta;
         combinedTaggedImages.push(...taggedImages);
       }
     }
@@ -61,9 +54,9 @@ function createSoal(
   ).then((taggedBlobs) => {
     for (let i = 0; i < taggedBlobs.length; i++) {
       formData.append(
-        taggedBlobs[i].tag,
+        taggedBlobs[i].imageTag,
         taggedBlobs[i].blob,
-        taggedBlobs[i].tag + ".png"
+        taggedBlobs[i].imageTag + ".png"
       );
     }
   });
