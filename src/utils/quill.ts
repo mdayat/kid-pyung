@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { QuillDeltaToHtmlConverter } from "quill-delta-to-html";
 import { type Delta } from "quill/core";
 
@@ -28,27 +29,25 @@ interface TaggedImage {
 }
 
 function replaceBase64ImageWithTag(
-  imageTag: string,
+  editorType: string,
   delta: Delta
 ): TaggedImage[] {
   const taggedImages: TaggedImage[] = [];
-  let imageNumber = 1;
 
-  // Get encoded image of delta and replace it with imageTag.
-  // The obtained encoded image is tagged with imageTag.
+  // Get encoded image of delta and replace it with uuid.
+  // The obtained encoded image is tagged with uuid.
   for (let i = 0; i < delta.ops.length; i++) {
     const insert = delta.ops[i].insert;
     const hasImageKey = typeof insert === "object" && "image" in insert;
 
     if (hasImageKey) {
       const taggedImage: TaggedImage = {
-        tag: `${imageTag}-${imageNumber}`,
+        tag: `${uuidv4()}_${editorType}`,
         encodedImage: insert.image as string,
       };
 
       taggedImages.push(taggedImage);
       insert.image = taggedImage.tag;
-      imageNumber++;
     }
   }
 
@@ -66,27 +65,22 @@ interface TaggedBlob {
 function base64ToBlobWithTag(
   imageTag: string,
   encodedImage: string
-): () => Promise<TaggedBlob> {
-  return () =>
-    new Promise<TaggedBlob>((resolve) => {
-      const base64Image = encodedImage.split("base64,")[1];
-      let binaryString = "";
+): Promise<TaggedBlob> {
+  return new Promise<TaggedBlob>((resolve) => {
+    const base64Image = encodedImage.split("base64,")[1];
 
-      try {
-        binaryString = window.atob(base64Image);
-      } catch (err) {
-        // Log the error because it cause file corruption
-      }
+    let binaryString = "";
+    binaryString = window.atob(base64Image);
 
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < bytes.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < bytes.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
 
-      const blob = new Blob([bytes], { type: "image/png" });
-      resolve({ imageTag, blob });
-    });
+    const blob = new Blob([bytes], { type: "image/png" });
+    resolve({ imageTag, blob });
+  });
 }
 
 export { deltaToHTMLString, replaceBase64ImageWithTag, base64ToBlobWithTag };
-export type { TaggedImage, TaggedBlob };
+export type { TaggedImage };

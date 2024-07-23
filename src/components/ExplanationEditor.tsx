@@ -7,18 +7,18 @@ import type Quill from "quill";
 import { RichTextEditor } from "./RichTextEditor";
 import { deltaToHTMLString } from "../utils/quill";
 
-interface PembahasanEditorProps {
+interface ExplanationEditorProps {
   quillInstance: Quill;
   setQuillInstance: Dispatch<SetStateAction<Quill>>;
 }
 
-export function PembahasanEditor({
+export function ExplanationEditor({
   quillInstance,
   setQuillInstance,
-}: PembahasanEditorProps): JSX.Element {
+}: ExplanationEditorProps): JSX.Element {
   function showEditorPreview(eventKey: string | null) {
     const divEl = document.getElementById(
-      "pembahasan-preview"
+      "explanation-preview"
     ) as HTMLDivElement;
 
     if (eventKey === "preview") {
@@ -33,7 +33,7 @@ export function PembahasanEditor({
     <Tabs
       onSelect={showEditorPreview}
       justify
-      id="pembahasan-form"
+      id="explanation-form"
       defaultActiveKey="editor"
       variant="underline"
       className="mb-4"
@@ -43,14 +43,17 @@ export function PembahasanEditor({
           <Form.Label as="p">Teks Editor Pembahasan</Form.Label>
           <RichTextEditor
             setQuillInstance={setQuillInstance}
-            editorID="pembahasan-editor"
-            toolbarID="pembahasan-toolbar"
+            editorID="explanation-editor"
+            toolbarID="explanation-toolbar"
           />
         </Form.Group>
       </Tab>
 
       <Tab eventKey="preview" title="Preview">
-        <div id="pembahasan-preview" className="border !p-4 [&_img]:w-96"></div>
+        <div
+          id="explanation-preview"
+          className="border !p-4 [&_img]:w-96"
+        ></div>
       </Tab>
     </Tabs>
   );

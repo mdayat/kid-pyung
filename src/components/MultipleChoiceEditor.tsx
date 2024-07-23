@@ -7,31 +7,33 @@ import type { Dispatch, SetStateAction } from "react";
 import { RichTextEditor } from "./RichTextEditor";
 import { deltaToHTMLString } from "../utils/quill";
 
-interface JawabanEditorProps {
-  jawaban: {
+interface MultipleChoiceEditorProps {
+  answerChoices: {
     quillInstance: Quill;
     setQuillInstance: Dispatch<SetStateAction<Quill>>;
   }[];
 }
 
-export function JawabanEditor({ jawaban }: JawabanEditorProps): JSX.Element {
+export function MultipleChoiceEditor({
+  answerChoices,
+}: MultipleChoiceEditorProps): JSX.Element {
   function showEditorPreview(eventKey: string | null) {
     if (eventKey === "preview") {
-      for (let i = 0; i < jawaban.length; i++) {
+      for (let i = 0; i < answerChoices.length; i++) {
         const divEl = document.getElementById(
-          `jawaban${i + 1}-preview`
+          `answer-choice-${i + 1}-preview`
         ) as HTMLDivElement;
 
         const htmlString = deltaToHTMLString(
-          jawaban[i].quillInstance.getContents()
+          answerChoices[i].quillInstance.getContents()
         );
 
         divEl.insertAdjacentHTML("beforeend", htmlString);
       }
     } else {
-      for (let i = 0; i < jawaban.length; i++) {
+      for (let i = 0; i < answerChoices.length; i++) {
         const divEl = document.getElementById(
-          `jawaban${i + 1}-preview`
+          `answer-choice-${i + 1}-preview`
         ) as HTMLDivElement;
         divEl.innerHTML = "";
       }
@@ -42,15 +44,15 @@ export function JawabanEditor({ jawaban }: JawabanEditorProps): JSX.Element {
     <Tabs
       onSelect={showEditorPreview}
       justify
-      id="jawaban-form"
+      id="multiple-choice-form"
       defaultActiveKey="editor"
       variant="underline"
       className="mb-4"
     >
       <Tab eventKey="editor" title="Editor">
-        {jawaban.map(({ setQuillInstance }, index) => (
+        {answerChoices.map(({ setQuillInstance }, index) => (
           <Form.Group
-            key={`jawaban${index + 1}-rich-text-editor`}
+            key={`answer-choice-${index + 1}-rich-text-editor`}
             className="mb-6 last:mb-0"
           >
             <div className="flex justify-between items-center mb-3">
@@ -60,10 +62,10 @@ export function JawabanEditor({ jawaban }: JawabanEditorProps): JSX.Element {
 
               <Form.Check
                 required
-                id={`jawaban${index + 1}`}
-                value={`jawaban${index + 1}`}
+                id={`answer-choice-${index + 1}`}
+                value={`answer-choice-${index + 1}`}
                 type="radio"
-                name="jawaban-benar"
+                name="correct-answer"
                 label="Pilih Sebagai Jawaban Benar"
                 className="[&_*]:cursor-pointer mb-0"
               />
@@ -71,18 +73,18 @@ export function JawabanEditor({ jawaban }: JawabanEditorProps): JSX.Element {
 
             <RichTextEditor
               setQuillInstance={setQuillInstance}
-              editorID={`jawaban${index + 1}-editor`}
-              toolbarID={`jawaban${index + 1}-toolbar`}
+              editorID={`answer-choice-${index + 1}-editor`}
+              toolbarID={`answer-choice-${index + 1}-toolbar`}
             />
           </Form.Group>
         ))}
       </Tab>
 
       <Tab eventKey="preview" title="Preview">
-        {jawaban.map((_, index) => (
+        {answerChoices.map((_, index) => (
           <div
-            key={`jawaban${index + 1}-preview`}
-            id={`jawaban${index + 1}-preview`}
+            key={`answer-choice-${index + 1}-preview`}
+            id={`answer-choice-${index + 1}-preview`}
             className="border !p-4 [&_img]:w-96 !mb-4 last:!mb-0"
           ></div>
         ))}

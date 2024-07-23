@@ -1,6 +1,6 @@
 import type { Delta } from "quill/core";
 import { replaceBase64ImageWithTag, base64ToBlobWithTag } from "./quill";
-import type { TaggedBlob, TaggedImage } from "./quill";
+import type { TaggedImage } from "./quill";
 
 interface TaggedDelta {
   tag: string;
@@ -8,51 +8,43 @@ interface TaggedDelta {
 }
 
 type Editor =
-  | { type: "soal"; delta: Delta }
-  | { type: "pembahasan"; delta: Delta }
-  | { type: "jawaban"; taggedDeltas: TaggedDelta[] };
+  | { type: "question"; delta: Delta }
+  | { type: "explanation"; delta: Delta }
+  | { type: "multipleChoice"; taggedDeltas: TaggedDelta[] };
 
-function createSoal(
+async function createSoal(
+  taxonomyBloom: string,
   materialID: string,
   learningMaterial: string,
-  jawabanBenarTag: string,
+  correctAnswerTag: string,
   editors: Editor[]
 ) {
   const combinedTaggedImages: TaggedImage[] = [];
   for (let i = 0; i < editors.length; i++) {
     const editor = editors[i];
-    if (editor.type !== "jawaban") {
+    if (editor.type !== "multipleChoice") {
       const taggedImages = replaceBase64ImageWithTag(editor.type, editor.delta);
       combinedTaggedImages.push(...taggedImages);
-    } else {
-      // The image of each jawaban is tagged by jawaban delta tag.
-      // This is to ensure each image has its corresponding delta.
-      for (let j = 0; j < editor.taggedDeltas.length; j++) {
-        const taggedImages = replaceBase64ImageWithTag(
-          editor.taggedDeltas[j].tag,
-          editor.taggedDeltas[j].delta
-        );
-        combinedTaggedImages.push(...taggedImages);
-      }
+      continue;
+    }
+
+    for (let j = 0; j < editor.taggedDeltas.length; j++) {
+      const taggedImages = replaceBase64ImageWithTag(
+        editor.taggedDeltas[j].tag,
+        editor.taggedDeltas[j].delta
+      );
+      combinedTaggedImages.push(...taggedImages);
     }
   }
 
   const formData = new FormData();
-  const taggedBlobPromises: Array<() => Promise<TaggedBlob>> = new Array(
-    combinedTaggedImages.length
-  );
-
-  for (let i = 0; i < combinedTaggedImages.length; i++) {
-    const taggedImage = combinedTaggedImages[i];
-    taggedBlobPromises[i] = base64ToBlobWithTag(
-      taggedImage.tag,
-      taggedImage.encodedImage
+  try {
+    const taggedBlobs = await Promise.all(
+      combinedTaggedImages.map((taggedImage) =>
+        base64ToBlobWithTag(taggedImage.tag, taggedImage.encodedImage)
+      )
     );
-  }
 
-  Promise.all(
-    taggedBlobPromises.map((taggedBlobPromise) => taggedBlobPromise())
-  ).then((taggedBlobs) => {
     for (let i = 0; i < taggedBlobs.length; i++) {
       formData.append(
         taggedBlobs[i].imageTag,
@@ -60,28 +52,31 @@ function createSoal(
         taggedBlobs[i].imageTag + ".png"
       );
     }
-  });
 
-  const learningMaterialID = learningMaterial.split("/")[1];
-  formData.append(
-    "question",
-    JSON.stringify({
-      learningMaterialID: learningMaterialID,
-      jawabanBenarTag,
-      editors,
-    })
-  );
+    const learningMaterialID = learningMaterial.split("/")[1];
+    formData.append(
+      "question",
+      JSON.stringify({
+        taxonomyBloom,
+        learningMaterialID: learningMaterialID,
+        correctAnswerTag,
+        editors,
+      })
+    );
 
-  const learningMaterialType =
-    learningMaterial.split("/")[0].split("_").join("-") + "s";
+    const learningMaterialType =
+      learningMaterial.split("/")[0].split("_").join("-") + "s";
 
-  fetch(
-    `http://localhost:3000/api/materials/${materialID}/${learningMaterialType}/${learningMaterialID}/questions`,
-    {
-      method: "POST",
-      body: formData,
-    }
-  );
+    fetch(
+      `http://localhost:3000/api/materials/${materialID}/${learningMaterialType}/${learningMaterialID}/questions`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+  } catch (error) {
+    console.log("Error when parse base64 to blob: ", error);
+  }
 }
 
 function beforeUnloadHandler(event: BeforeUnloadEvent) {

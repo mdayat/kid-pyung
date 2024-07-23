@@ -6,68 +6,74 @@ import type Quill from "quill";
 import type { Delta } from "quill/core";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 
-import { SoalEditor } from "../components/SoalEditor";
-import { PembahasanEditor } from "../components/PembahasanEditor";
-import { JawabanEditor } from "../components/JawabanEditor";
+import { QuestionEditor } from "../components/QuestionEditor";
+import { ExplanationEditor } from "../components/ExplanationEditor";
+import { MultipleChoiceEditor } from "../components/MultipleChoiceEditor";
 import { beforeUnloadHandler, createSoal } from "../utils/soal";
 import type { Editor, TaggedDelta } from "../utils/soal";
 
 const MATERIAL_ID = "f64fb490-778d-4719-8d01-18f49a3b55a4";
 
 export default function Soal(): JSX.Element {
-  const [soalQuill, setSoalQuill] = useState<Quill>();
-  const [pembahasanQuill, setPembahasanQuill] = useState<Quill>();
+  const [questionQuill, setQuestionQuill] = useState<Quill>();
+  const [explanationQuill, setExplanationQuill] = useState<Quill>();
 
-  const [jawaban1Quill, setJawaban1Quill] = useState<Quill>();
-  const [jawaban2Quill, setJawaban2Quill] = useState<Quill>();
-  const [jawaban3Quill, setJawaban3Quill] = useState<Quill>();
-  const [jawaban4Quill, setJawaban4Quill] = useState<Quill>();
-  const [jawaban5Quill, setJawaban5Quill] = useState<Quill>();
+  const [firstAnswerChoiceQuill, setFirstAnswerChoiceQuill] = useState<Quill>();
+  const [secondAnswerChoiceQuill, setSecondAnswerChoiceQuill] =
+    useState<Quill>();
+  const [thirdAnswerChoiceQuill, setThirdAnswerChoiceQuill] = useState<Quill>();
+  const [fourthAnswerChoiceQuill, setFourthAnswerChoiceQuill] =
+    useState<Quill>();
+  const [fifthAnswerChoiceQuill, setFifthAnswerChoiceQuill] = useState<Quill>();
 
   function submitCreateSoalHandler(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     // Deep copy the delta so it doesn't mutate its source (quill instance).
-    const jawabanDeltas = [
-      JSON.parse(JSON.stringify(jawaban1Quill?.getContents())) as Delta,
-      JSON.parse(JSON.stringify(jawaban2Quill?.getContents())) as Delta,
-      JSON.parse(JSON.stringify(jawaban3Quill?.getContents())) as Delta,
-      JSON.parse(JSON.stringify(jawaban4Quill?.getContents())) as Delta,
-      JSON.parse(JSON.stringify(jawaban5Quill?.getContents())) as Delta,
+    const multipleChoiceDelta = [
+      JSON.parse(JSON.stringify(firstAnswerChoiceQuill?.getContents())),
+      JSON.parse(JSON.stringify(secondAnswerChoiceQuill?.getContents())),
+      JSON.parse(JSON.stringify(thirdAnswerChoiceQuill?.getContents())),
+      JSON.parse(JSON.stringify(fourthAnswerChoiceQuill?.getContents())),
+      JSON.parse(JSON.stringify(fifthAnswerChoiceQuill?.getContents())),
     ];
 
-    // The delta of each jawaban is tagged by jawabanTag variable.
-    const taggedDeltas: TaggedDelta[] = [];
-    for (let i = 0; i < jawabanDeltas.length; i++) {
-      const jawabanTag = `jawaban${i + 1}`;
-      taggedDeltas.push({ tag: jawabanTag, delta: jawabanDeltas[i] });
+    // The delta of each jawaban is tagged by "answerChoiceTag" variable.
+    const taggedDeltas: TaggedDelta[] = new Array(multipleChoiceDelta.length);
+    for (let i = 0; i < multipleChoiceDelta.length; i++) {
+      const answerChoiceTag = `answer-choice-${i + 1}`;
+      taggedDeltas[i] = { tag: answerChoiceTag, delta: multipleChoiceDelta[i] };
     }
 
     // Deep copy the delta so it doesn't mutate its source (quill instance).
     const editors: Editor[] = [
       {
-        type: "soal",
-        delta: JSON.parse(JSON.stringify(soalQuill?.getContents())) as Delta,
-      },
-      {
-        type: "pembahasan",
+        type: "question",
         delta: JSON.parse(
-          JSON.stringify(pembahasanQuill?.getContents())
+          JSON.stringify(questionQuill?.getContents())
         ) as Delta,
       },
       {
-        type: "jawaban",
+        type: "explanation",
+        delta: JSON.parse(
+          JSON.stringify(explanationQuill?.getContents())
+        ) as Delta,
+      },
+      {
+        type: "multipleChoice",
         taggedDeltas,
       },
     ];
 
     const formData = new FormData(event.currentTarget);
     const learningMaterial = formData.get("learning-material") as string;
-    const jawabanBenarTag = formData.get("jawaban-benar") as string;
+    const correctAnswerTag = formData.get("correct-answer") as string;
+    const taxonomyBloom = formData.get("taxonomy-bloom") as string;
 
     createSoal(
+      taxonomyBloom,
       MATERIAL_ID,
       learningMaterial,
-      jawabanBenarTag as string,
+      correctAnswerTag as string,
       editors
     );
   }
@@ -89,10 +95,12 @@ export default function Soal(): JSX.Element {
       <Accordion.Item eventKey="0">
         <Accordion.Header>Soal</Accordion.Header>
         <Accordion.Body className="pb-10">
-          <SoalEditor
+          <QuestionEditor
             materialID={MATERIAL_ID}
-            quillInstance={soalQuill as Quill}
-            setQuillInstance={setSoalQuill as Dispatch<SetStateAction<Quill>>}
+            quillInstance={questionQuill as Quill}
+            setQuillInstance={
+              setQuestionQuill as Dispatch<SetStateAction<Quill>>
+            }
           />
         </Accordion.Body>
       </Accordion.Item>
@@ -100,10 +108,10 @@ export default function Soal(): JSX.Element {
       <Accordion.Item eventKey="1">
         <Accordion.Header>Pembahasan</Accordion.Header>
         <Accordion.Body className="pb-10">
-          <PembahasanEditor
-            quillInstance={pembahasanQuill as Quill}
+          <ExplanationEditor
+            quillInstance={explanationQuill as Quill}
             setQuillInstance={
-              setPembahasanQuill as Dispatch<SetStateAction<Quill>>
+              setExplanationQuill as Dispatch<SetStateAction<Quill>>
             }
           />
         </Accordion.Body>
@@ -112,35 +120,35 @@ export default function Soal(): JSX.Element {
       <Accordion.Item eventKey="2">
         <Accordion.Header>Jawaban</Accordion.Header>
         <Accordion.Body>
-          <JawabanEditor
-            jawaban={[
+          <MultipleChoiceEditor
+            answerChoices={[
               {
-                quillInstance: jawaban1Quill as Quill,
-                setQuillInstance: setJawaban1Quill as Dispatch<
+                quillInstance: firstAnswerChoiceQuill as Quill,
+                setQuillInstance: setFirstAnswerChoiceQuill as Dispatch<
                   SetStateAction<Quill>
                 >,
               },
               {
-                quillInstance: jawaban2Quill as Quill,
-                setQuillInstance: setJawaban2Quill as Dispatch<
+                quillInstance: secondAnswerChoiceQuill as Quill,
+                setQuillInstance: setSecondAnswerChoiceQuill as Dispatch<
                   SetStateAction<Quill>
                 >,
               },
               {
-                quillInstance: jawaban3Quill as Quill,
-                setQuillInstance: setJawaban3Quill as Dispatch<
+                quillInstance: thirdAnswerChoiceQuill as Quill,
+                setQuillInstance: setThirdAnswerChoiceQuill as Dispatch<
                   SetStateAction<Quill>
                 >,
               },
               {
-                quillInstance: jawaban4Quill as Quill,
-                setQuillInstance: setJawaban4Quill as Dispatch<
+                quillInstance: fourthAnswerChoiceQuill as Quill,
+                setQuillInstance: setFourthAnswerChoiceQuill as Dispatch<
                   SetStateAction<Quill>
                 >,
               },
               {
-                quillInstance: jawaban5Quill as Quill,
-                setQuillInstance: setJawaban5Quill as Dispatch<
+                quillInstance: fifthAnswerChoiceQuill as Quill,
+                setQuillInstance: setFifthAnswerChoiceQuill as Dispatch<
                   SetStateAction<Quill>
                 >,
               },

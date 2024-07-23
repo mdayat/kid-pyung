@@ -16,23 +16,23 @@ interface LearningMaterial {
   sequenceNumber: number;
 }
 
-interface SoalEditorProps {
+interface QuestionEditorProps {
   materialID: string;
   quillInstance: Quill;
   setQuillInstance: Dispatch<SetStateAction<Quill>>;
 }
 
-export function SoalEditor({
+export function QuestionEditor({
   materialID,
   quillInstance,
   setQuillInstance,
-}: SoalEditorProps): JSX.Element {
+}: QuestionEditorProps): JSX.Element {
   const [learningMaterials, setLearningMaterials] = useState<
     LearningMaterial[]
   >([]);
 
   function showEditorPreview(eventKey: string | null) {
-    const divEl = document.getElementById("soal-preview") as HTMLDivElement;
+    const divEl = document.getElementById("question-preview") as HTMLDivElement;
     if (eventKey === "preview") {
       const htmlString = deltaToHTMLString(quillInstance.getContents());
       divEl.insertAdjacentHTML("beforeend", htmlString);
@@ -69,7 +69,7 @@ export function SoalEditor({
     <Tabs
       onSelect={showEditorPreview}
       justify
-      id="soal-form"
+      id="question-form"
       defaultActiveKey="editor"
       variant="underline"
       className="mb-4"
@@ -79,7 +79,6 @@ export function SoalEditor({
           <Form.Select
             disabled={learningMaterials.length === 0}
             name="learning-material"
-            aria-label="Pilih Prasyarat atau Sub-Materi"
             required
           >
             {learningMaterials.map(({ id, name, type }) => (
@@ -90,18 +89,29 @@ export function SoalEditor({
           </Form.Select>
         </Form.Group>
 
+        <Form.Group className="max-w-sm mb-6">
+          <Form.Select name="taxonomy-bloom" required>
+            <option value="c1">C1</option>
+            <option value="c2">C2</option>
+            <option value="c3">C3</option>
+            <option value="c4">C4</option>
+            <option value="c5">C5</option>
+            <option value="c6">C6</option>
+          </Form.Select>
+        </Form.Group>
+
         <Form.Group>
           <Form.Label as="p">Teks Editor Soal</Form.Label>
           <RichTextEditor
             setQuillInstance={setQuillInstance}
-            editorID="soal-editor"
-            toolbarID="soal-toolbar"
+            editorID="question-editor"
+            toolbarID="question-toolbar"
           />
         </Form.Group>
       </Tab>
 
       <Tab eventKey="preview" title="Preview">
-        <div id="soal-preview" className="border !p-4 [&_img]:w-96"></div>
+        <div id="question-preview" className="border !p-4 [&_img]:w-96"></div>
       </Tab>
     </Tabs>
   );
