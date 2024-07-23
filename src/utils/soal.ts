@@ -13,7 +13,8 @@ type Editor =
   | { type: "jawaban"; taggedDeltas: TaggedDelta[] };
 
 function createSoal(
-  soalID: string,
+  materialID: string,
+  learningMaterial: string,
   jawabanBenarTag: string,
   editors: Editor[]
 ) {
@@ -61,9 +62,25 @@ function createSoal(
     }
   });
 
+  const learningMaterialID = learningMaterial.split("/")[1];
   formData.append(
-    "editors",
-    JSON.stringify({ soalID, jawabanBenarTag, editors })
+    "question",
+    JSON.stringify({
+      learningMaterialID: learningMaterialID,
+      jawabanBenarTag,
+      editors,
+    })
+  );
+
+  const learningMaterialType =
+    learningMaterial.split("/")[0].split("_").join("-") + "s";
+
+  fetch(
+    `http://localhost:3000/api/materials/${materialID}/${learningMaterialType}/${learningMaterialID}/questions`,
+    {
+      method: "POST",
+      body: formData,
+    }
   );
 }
 

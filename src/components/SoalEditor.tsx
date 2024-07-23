@@ -1,37 +1,35 @@
-import { useRef } from "react";
-import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
-import type { Dispatch, RefObject, SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type Quill from "quill";
 
 import { RichTextEditor } from "./RichTextEditor";
 import { deltaToHTMLString } from "../utils/quill";
 
+interface LearningMaterial {
+  id: string;
+  name: string;
+  description: string;
+  learningModuleURL: string;
+  type: "prerequisite" | "sub_material";
+  sequenceNumber: number;
+}
+
 interface SoalEditorProps {
-  soalIDRef: RefObject<HTMLInputElement>;
+  materialID: string;
   quillInstance: Quill;
   setQuillInstance: Dispatch<SetStateAction<Quill>>;
 }
 
 export function SoalEditor({
-  soalIDRef,
+  materialID,
   quillInstance,
   setQuillInstance,
 }: SoalEditorProps): JSX.Element {
-  const soalIDDescRef = useRef<HTMLElement>(null);
-  const registeredIDText = "ID soal sudah terdaftar!";
-  const unregisteredIDText = "Setiap ID pada soal harus unik.";
-
-  function checkIDSoal() {
-    setTimeout(() => {
-      const smallEl = soalIDDescRef.current as HTMLElement;
-      smallEl.classList.replace("text-muted", "text-red-600");
-      smallEl.classList.add("italic");
-      smallEl.textContent = registeredIDText;
-    }, 1000);
-  }
+  const [learningMaterials, setLearningMaterials] = useState<
+    LearningMaterial[]
+  >([]);
 
   function showEditorPreview(eventKey: string | null) {
     const divEl = document.getElementById("soal-preview") as HTMLDivElement;
@@ -43,6 +41,30 @@ export function SoalEditor({
     }
   }
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await Promise.all([
+          fetch(
+            `http://localhost:3000/api/materials/${materialID}/prerequisites`
+          ),
+          fetch(
+            `http://localhost:3000/api/materials/${materialID}/sub-materials`
+          ),
+        ]);
+
+        const results: Array<{
+          status: "success" | "failed";
+          data: LearningMaterial[];
+        }> = await Promise.all([response[0].json(), response[1].json()]);
+
+        setLearningMaterials([...results[0].data].concat(results[1].data));
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, [materialID]);
+
   return (
     <Tabs
       onSelect={showEditorPreview}
@@ -53,34 +75,19 @@ export function SoalEditor({
       className="mb-4"
     >
       <Tab eventKey="editor" title="Editor">
-        <Form.Group controlId="soal_id" className="max-w-sm mb-6">
-          <div className="flex justify-start items-center gap-x-6">
-            <Form.Control
-              ref={soalIDRef}
-              required
-              type="text"
-              placeholder="Masukkan ID Soal..."
-              autoComplete="off"
-              className="placeholder:text-sm"
-            />
-
-            <Button
-              onClick={checkIDSoal}
-              type="button"
-              variant="primary"
-              size="sm"
-              className="shrink-0"
-            >
-              Cek ID Soal
-            </Button>
-          </div>
-
-          <Form.Text
-            ref={soalIDDescRef}
-            className="text-muted transition-all duration-300"
+        <Form.Group className="max-w-sm mb-6">
+          <Form.Select
+            disabled={learningMaterials.length === 0}
+            name="learning-material"
+            aria-label="Pilih Prasyarat atau Sub-Materi"
+            required
           >
-            {unregisteredIDText}
-          </Form.Text>
+            {learningMaterials.map(({ id, name, type }) => (
+              <option key={id} value={`${type}/${id}`}>
+                {name}
+              </option>
+            ))}
+          </Form.Select>
         </Form.Group>
 
         <Form.Group>

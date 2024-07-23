@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Accordion from "react-bootstrap/Accordion";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -12,8 +12,9 @@ import { JawabanEditor } from "../components/JawabanEditor";
 import { beforeUnloadHandler, createSoal } from "../utils/soal";
 import type { Editor, TaggedDelta } from "../utils/soal";
 
+const MATERIAL_ID = "f64fb490-778d-4719-8d01-18f49a3b55a4";
+
 export default function Soal(): JSX.Element {
-  const soalIDRef = useRef<HTMLInputElement>(null);
   const [soalQuill, setSoalQuill] = useState<Quill>();
   const [pembahasanQuill, setPembahasanQuill] = useState<Quill>();
 
@@ -60,10 +61,12 @@ export default function Soal(): JSX.Element {
     ];
 
     const formData = new FormData(event.currentTarget);
-    const jawabanBenarTag = formData.get("jawaban-benar");
+    const learningMaterial = formData.get("learning-material") as string;
+    const jawabanBenarTag = formData.get("jawaban-benar") as string;
 
     createSoal(
-      (soalIDRef.current as HTMLInputElement).value as string,
+      MATERIAL_ID,
+      learningMaterial,
       jawabanBenarTag as string,
       editors
     );
@@ -87,7 +90,7 @@ export default function Soal(): JSX.Element {
         <Accordion.Header>Soal</Accordion.Header>
         <Accordion.Body className="pb-10">
           <SoalEditor
-            soalIDRef={soalIDRef}
+            materialID={MATERIAL_ID}
             quillInstance={soalQuill as Quill}
             setQuillInstance={setSoalQuill as Dispatch<SetStateAction<Quill>>}
           />
