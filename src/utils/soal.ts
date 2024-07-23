@@ -1,15 +1,14 @@
-import type { Delta } from "quill/core";
 import { replaceBase64ImageWithTag, base64ToBlobWithTag } from "./quill";
-import type { TaggedImage } from "./quill";
+import type { DeltaOps, TaggedImage } from "./quill";
 
 interface TaggedDelta {
   tag: string;
-  delta: Delta;
+  deltaOps: DeltaOps[];
 }
 
 type Editor =
-  | { type: "question"; delta: Delta }
-  | { type: "explanation"; delta: Delta }
+  | { type: "question"; deltaOps: DeltaOps[] }
+  | { type: "explanation"; deltaOps: DeltaOps[] }
   | { type: "multipleChoice"; taggedDeltas: TaggedDelta[] };
 
 async function createSoal(
@@ -23,7 +22,10 @@ async function createSoal(
   for (let i = 0; i < editors.length; i++) {
     const editor = editors[i];
     if (editor.type !== "multipleChoice") {
-      const taggedImages = replaceBase64ImageWithTag(editor.type, editor.delta);
+      const taggedImages = replaceBase64ImageWithTag(
+        editor.type,
+        editor.deltaOps
+      );
       combinedTaggedImages.push(...taggedImages);
       continue;
     }
@@ -31,7 +33,7 @@ async function createSoal(
     for (let j = 0; j < editor.taggedDeltas.length; j++) {
       const taggedImages = replaceBase64ImageWithTag(
         editor.taggedDeltas[j].tag,
-        editor.taggedDeltas[j].delta
+        editor.taggedDeltas[j].deltaOps
       );
       combinedTaggedImages.push(...taggedImages);
     }
@@ -53,17 +55,16 @@ async function createSoal(
       );
     }
 
-    const learningMaterialID = learningMaterial.split("/")[1];
     formData.append(
       "question",
       JSON.stringify({
         taxonomyBloom,
-        learningMaterialID: learningMaterialID,
         correctAnswerTag,
         editors,
       })
     );
 
+    const learningMaterialID = learningMaterial.split("/")[1];
     const learningMaterialType =
       learningMaterial.split("/")[0].split("_").join("-") + "s";
 

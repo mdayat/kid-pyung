@@ -1,9 +1,15 @@
 import { v4 as uuidv4 } from "uuid";
 import { QuillDeltaToHtmlConverter } from "quill-delta-to-html";
-import { type Delta } from "quill/core";
 
-function deltaToHTMLString(delta: Delta): string {
-  const deltaConverter = new QuillDeltaToHtmlConverter(delta.ops);
+interface DeltaOps {
+  insert?: string | Record<string, unknown> | undefined;
+  delete?: number | undefined;
+  retain?: number | Record<string, unknown> | undefined;
+  attributes?: Map<string, unknown> | undefined;
+}
+
+function deltaToHTMLString(deltaOps: DeltaOps): string {
+  const deltaConverter = new QuillDeltaToHtmlConverter(deltaOps as []);
   deltaConverter.afterRender((_, HTMLString) => {
     const HTMLDoc = new DOMParser().parseFromString(HTMLString, "text/html");
     const bodyEl = HTMLDoc.getElementsByTagName("body")[0];
@@ -30,14 +36,14 @@ interface TaggedImage {
 
 function replaceBase64ImageWithTag(
   editorType: string,
-  delta: Delta
+  deltaOps: DeltaOps[]
 ): TaggedImage[] {
   const taggedImages: TaggedImage[] = [];
 
   // Get encoded image of delta and replace it with uuid.
   // The obtained encoded image is tagged with uuid.
-  for (let i = 0; i < delta.ops.length; i++) {
-    const insert = delta.ops[i].insert;
+  for (let i = 0; i < deltaOps.length; i++) {
+    const insert = deltaOps[i].insert;
     const hasImageKey = typeof insert === "object" && "image" in insert;
 
     if (hasImageKey) {
@@ -83,4 +89,4 @@ function base64ToBlobWithTag(
 }
 
 export { deltaToHTMLString, replaceBase64ImageWithTag, base64ToBlobWithTag };
-export type { TaggedImage };
+export type { TaggedImage, DeltaOps };

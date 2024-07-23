@@ -3,7 +3,6 @@ import Accordion from "react-bootstrap/Accordion";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import type Quill from "quill";
-import type { Delta } from "quill/core";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 
 import { QuestionEditor } from "../components/QuestionEditor";
@@ -30,33 +29,34 @@ export default function Soal(): JSX.Element {
     event.preventDefault();
     // Deep copy the delta so it doesn't mutate its source (quill instance).
     const multipleChoiceDelta = [
-      JSON.parse(JSON.stringify(firstAnswerChoiceQuill?.getContents())),
-      JSON.parse(JSON.stringify(secondAnswerChoiceQuill?.getContents())),
-      JSON.parse(JSON.stringify(thirdAnswerChoiceQuill?.getContents())),
-      JSON.parse(JSON.stringify(fourthAnswerChoiceQuill?.getContents())),
-      JSON.parse(JSON.stringify(fifthAnswerChoiceQuill?.getContents())),
+      JSON.parse(JSON.stringify(firstAnswerChoiceQuill?.getContents().ops)),
+      JSON.parse(JSON.stringify(secondAnswerChoiceQuill?.getContents().ops)),
+      JSON.parse(JSON.stringify(thirdAnswerChoiceQuill?.getContents().ops)),
+      JSON.parse(JSON.stringify(fourthAnswerChoiceQuill?.getContents().ops)),
+      JSON.parse(JSON.stringify(fifthAnswerChoiceQuill?.getContents().ops)),
     ];
 
     // The delta of each jawaban is tagged by "answerChoiceTag" variable.
     const taggedDeltas: TaggedDelta[] = new Array(multipleChoiceDelta.length);
     for (let i = 0; i < multipleChoiceDelta.length; i++) {
       const answerChoiceTag = `answer-choice-${i + 1}`;
-      taggedDeltas[i] = { tag: answerChoiceTag, delta: multipleChoiceDelta[i] };
+      taggedDeltas[i] = {
+        tag: answerChoiceTag,
+        deltaOps: multipleChoiceDelta[i],
+      };
     }
 
     // Deep copy the delta so it doesn't mutate its source (quill instance).
     const editors: Editor[] = [
       {
         type: "question",
-        delta: JSON.parse(
-          JSON.stringify(questionQuill?.getContents())
-        ) as Delta,
+        deltaOps: JSON.parse(JSON.stringify(questionQuill?.getContents().ops)),
       },
       {
         type: "explanation",
-        delta: JSON.parse(
-          JSON.stringify(explanationQuill?.getContents())
-        ) as Delta,
+        deltaOps: JSON.parse(
+          JSON.stringify(explanationQuill?.getContents().ops)
+        ),
       },
       {
         type: "multipleChoice",
