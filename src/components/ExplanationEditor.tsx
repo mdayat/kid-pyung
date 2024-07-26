@@ -5,7 +5,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type Quill from "quill";
 
 import { RichTextEditor } from "./RichTextEditor";
-import { deltaToHTMLString } from "../utils/quill";
+import { type DeltaOps, deltaToHTMLString } from "../utils/quill";
 
 interface ExplanationEditorProps {
   quillInstance: Quill;
@@ -22,7 +22,9 @@ export function ExplanationEditor({
     ) as HTMLDivElement;
 
     if (eventKey === "preview") {
-      const htmlString = deltaToHTMLString(quillInstance.getContents());
+      const htmlString = deltaToHTMLString(
+        quillInstance.getContents().ops as DeltaOps
+      );
       divEl.insertAdjacentHTML("beforeend", htmlString);
     } else {
       divEl.innerHTML = "";

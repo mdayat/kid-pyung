@@ -25,7 +25,7 @@ export default function Soal(): JSX.Element {
     useState<Quill>();
   const [fifthAnswerChoiceQuill, setFifthAnswerChoiceQuill] = useState<Quill>();
 
-  function submitCreateSoalHandler(event: FormEvent<HTMLFormElement>) {
+  async function submitCreateSoalHandler(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     // Deep copy the delta so it doesn't mutate its source (quill instance).
     const multipleChoiceDelta = [
@@ -69,13 +69,27 @@ export default function Soal(): JSX.Element {
     const correctAnswerTag = formData.get("correct-answer") as string;
     const taxonomyBloom = formData.get("taxonomy-bloom") as string;
 
-    createSoal(
-      taxonomyBloom,
-      MATERIAL_ID,
-      learningMaterial,
-      correctAnswerTag as string,
-      editors
-    );
+    try {
+      await createSoal(
+        taxonomyBloom,
+        MATERIAL_ID,
+        learningMaterial,
+        correctAnswerTag as string,
+        editors
+      );
+      alert("SUKSES MEMBUAT SOAL");
+
+      questionQuill?.setContents([]);
+      explanationQuill?.setContents([]);
+      firstAnswerChoiceQuill?.setContents([]);
+      secondAnswerChoiceQuill?.setContents([]);
+      thirdAnswerChoiceQuill?.setContents([]);
+      fourthAnswerChoiceQuill?.setContents([]);
+      fifthAnswerChoiceQuill?.setContents([]);
+    } catch (error) {
+      console.error("Error when parse base64 to blob: ", error);
+      alert("GAGAL MEMBUAT SOAL");
+    }
   }
 
   useEffect(() => {

@@ -40,44 +40,40 @@ async function createSoal(
   }
 
   const formData = new FormData();
-  try {
-    const taggedBlobs = await Promise.all(
-      combinedTaggedImages.map((taggedImage) =>
-        base64ToBlobWithTag(taggedImage.tag, taggedImage.encodedImage)
-      )
-    );
+  const taggedBlobs = await Promise.all(
+    combinedTaggedImages.map((taggedImage) =>
+      base64ToBlobWithTag(taggedImage.tag, taggedImage.encodedImage)
+    )
+  );
 
-    for (let i = 0; i < taggedBlobs.length; i++) {
-      formData.append(
-        taggedBlobs[i].imageTag,
-        taggedBlobs[i].blob,
-        taggedBlobs[i].imageTag + ".png"
-      );
-    }
-
+  for (let i = 0; i < taggedBlobs.length; i++) {
     formData.append(
-      "question",
-      JSON.stringify({
-        taxonomyBloom,
-        correctAnswerTag,
-        editors,
-      })
+      taggedBlobs[i].imageTag,
+      taggedBlobs[i].blob,
+      taggedBlobs[i].imageTag + ".png"
     );
-
-    const learningMaterialID = learningMaterial.split("/")[1];
-    const learningMaterialType =
-      learningMaterial.split("/")[0].split("_").join("-") + "s";
-
-    fetch(
-      `http://localhost:3000/api/materials/${materialID}/${learningMaterialType}/${learningMaterialID}/questions`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-  } catch (error) {
-    console.log("Error when parse base64 to blob: ", error);
   }
+
+  formData.append(
+    "question",
+    JSON.stringify({
+      taxonomyBloom,
+      correctAnswerTag,
+      editors,
+    })
+  );
+
+  const learningMaterialID = learningMaterial.split("/")[1];
+  const learningMaterialType =
+    learningMaterial.split("/")[0].split("_").join("-") + "s";
+
+  fetch(
+    `http://localhost:3000/api/materials/${materialID}/${learningMaterialType}/${learningMaterialID}/questions`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
 }
 
 function beforeUnloadHandler(event: BeforeUnloadEvent) {

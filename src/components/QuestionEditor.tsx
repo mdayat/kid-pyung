@@ -5,7 +5,7 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type Quill from "quill";
 
 import { RichTextEditor } from "./RichTextEditor";
-import { deltaToHTMLString } from "../utils/quill";
+import { type DeltaOps, deltaToHTMLString } from "../utils/quill";
 
 interface LearningMaterial {
   id: string;
@@ -34,7 +34,9 @@ export function QuestionEditor({
   function showEditorPreview(eventKey: string | null) {
     const divEl = document.getElementById("question-preview") as HTMLDivElement;
     if (eventKey === "preview") {
-      const htmlString = deltaToHTMLString(quillInstance.getContents());
+      const htmlString = deltaToHTMLString(
+        quillInstance.getContents().ops as DeltaOps
+      );
       divEl.insertAdjacentHTML("beforeend", htmlString);
     } else {
       divEl.innerHTML = "";
