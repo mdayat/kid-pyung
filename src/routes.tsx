@@ -2,7 +2,8 @@ import { Suspense, lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import { RootLayout } from "./RootLayout";
-import { Home } from "./pages/Home";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
 
 const Soal = lazy(() => import("./pages/Soal"));
 
@@ -23,6 +24,10 @@ export const router = createBrowserRouter([
             <Soal />
           </Suspense>
         ),
+      },
+      {
+        path: "/login",
+        element: <Login />,
       },
     ],
   },

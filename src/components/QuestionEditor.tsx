@@ -6,6 +6,8 @@ import type Quill from "quill";
 
 import { RichTextEditor } from "./RichTextEditor";
 import { type DeltaOps, deltaToHTMLString } from "../utils/quill";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../lib/firebase";
 
 interface LearningMaterial {
   id: string;
@@ -43,15 +45,27 @@ export function QuestionEditor({
     }
   }
 
+  const [user, loading] = useAuthState(auth);
   useEffect(() => {
+    if (loading) return;
     (async () => {
       try {
         const response = await Promise.all([
           fetch(
-            `http://localhost:3000/api/materials/${materialID}/prerequisites`
+            `http://localhost:3000/api/materials/${materialID}/prerequisites`,
+            {
+              headers: {
+                Authorization: `Bearer ${await user?.getIdToken()}`,
+              },
+            }
           ),
           fetch(
-            `http://localhost:3000/api/materials/${materialID}/sub-materials`
+            `http://localhost:3000/api/materials/${materialID}/sub-materials`,
+            {
+              headers: {
+                Authorization: `Bearer ${await user?.getIdToken()}`,
+              },
+            }
           ),
         ]);
 
@@ -65,7 +79,7 @@ export function QuestionEditor({
         console.log(error);
       }
     })();
-  }, [materialID]);
+  }, [materialID, user, loading]);
 
   return (
     <Tabs
