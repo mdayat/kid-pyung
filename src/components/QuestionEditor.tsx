@@ -5,7 +5,8 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type Quill from "quill";
 
 import { RichTextEditor } from "./RichTextEditor";
-import { type DeltaOps, deltaToHTMLString } from "../utils/quill";
+import { deltaToHTMLString } from "../utils/quill";
+import type { DeltaOperation } from "../types/editor";
 
 interface LearningMaterial {
   id: string;
@@ -35,7 +36,7 @@ export function QuestionEditor({
     const divEl = document.getElementById("question-preview") as HTMLDivElement;
     if (eventKey === "preview") {
       const htmlString = deltaToHTMLString(
-        quillInstance.getContents().ops as DeltaOps
+        quillInstance.getContents().ops as DeltaOperation[]
       );
       divEl.insertAdjacentHTML("beforeend", htmlString);
     } else {
@@ -46,21 +47,13 @@ export function QuestionEditor({
   useEffect(() => {
     (async () => {
       try {
-        const response = await Promise.all([
-          fetch(
-            `http://localhost:3000/api/materials/${materialID}/prerequisites`
-          ),
-          fetch(
-            `http://localhost:3000/api/materials/${materialID}/sub-materials`
-          ),
-        ]);
+        const response = await (
+          await fetch(
+            `http://localhost:3000/api/materials/${materialID}/learning-materials`
+          )
+        ).json();
 
-        const results: Array<{
-          status: "success" | "failed";
-          data: LearningMaterial[];
-        }> = await Promise.all([response[0].json(), response[1].json()]);
-
-        setLearningMaterials([...results[0].data].concat(results[1].data));
+        setLearningMaterials(response.data);
       } catch (error) {
         console.log(error);
       }
@@ -83,8 +76,8 @@ export function QuestionEditor({
             name="learning-material"
             required
           >
-            {learningMaterials.map(({ id, name, type }) => (
-              <option key={id} value={`${type}/${id}`}>
+            {learningMaterials.map(({ id, name }) => (
+              <option key={id} value={id}>
                 {name}
               </option>
             ))}

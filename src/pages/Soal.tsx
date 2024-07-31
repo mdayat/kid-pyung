@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { z as zod } from "zod";
 import Accordion from "react-bootstrap/Accordion";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -9,11 +10,12 @@ import { QuestionEditor } from "../components/QuestionEditor";
 import { ExplanationEditor } from "../components/ExplanationEditor";
 import { MultipleChoiceEditor } from "../components/MultipleChoiceEditor";
 import { beforeUnloadHandler, createSoal } from "../utils/soal";
-import type { Editor, TaggedDelta } from "../utils/soal";
+import { editorSchema, type Editor, type TaggedDelta } from "../types/editor";
 
 const MATERIAL_ID = "f64fb490-778d-4719-8d01-18f49a3b55a4";
 
 export default function Soal(): JSX.Element {
+  const [isLoading, setIsLoading] = useState(false);
   const [questionQuill, setQuestionQuill] = useState<Quill>();
   const [explanationQuill, setExplanationQuill] = useState<Quill>();
 
@@ -26,6 +28,7 @@ export default function Soal(): JSX.Element {
   const [fifthAnswerChoiceQuill, setFifthAnswerChoiceQuill] = useState<Quill>();
 
   async function submitCreateSoalHandler(event: FormEvent<HTMLFormElement>) {
+    setIsLoading(true);
     event.preventDefault();
     // Deep copy the delta so it doesn't mutate its source (quill instance).
     const multipleChoiceDelta = [
@@ -42,7 +45,7 @@ export default function Soal(): JSX.Element {
       const answerChoiceTag = `answer-choice-${i + 1}`;
       taggedDeltas[i] = {
         tag: answerChoiceTag,
-        deltaOps: multipleChoiceDelta[i],
+        deltaOperations: multipleChoiceDelta[i],
       };
     }
 
@@ -50,11 +53,13 @@ export default function Soal(): JSX.Element {
     const editors: Editor[] = [
       {
         type: "question",
-        deltaOps: JSON.parse(JSON.stringify(questionQuill?.getContents().ops)),
+        deltaOperations: JSON.parse(
+          JSON.stringify(questionQuill?.getContents().ops)
+        ),
       },
       {
         type: "explanation",
-        deltaOps: JSON.parse(
+        deltaOperations: JSON.parse(
           JSON.stringify(explanationQuill?.getContents().ops)
         ),
       },
@@ -64,8 +69,17 @@ export default function Soal(): JSX.Element {
       },
     ];
 
+    const result = zod.array(editorSchema).safeParse(editors);
+    if (result.success === false) {
+      console.error(
+        new Error("Invalid Editor Schema: ", { cause: result.error })
+      );
+      alert("ZOD PARSE ERROR!!!");
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
-    const learningMaterial = formData.get("learning-material") as string;
+    const learningMaterialID = formData.get("learning-material") as string;
     const correctAnswerTag = formData.get("correct-answer") as string;
     const taxonomyBloom = formData.get("taxonomy-bloom") as string;
 
@@ -73,22 +87,24 @@ export default function Soal(): JSX.Element {
       await createSoal(
         taxonomyBloom,
         MATERIAL_ID,
-        learningMaterial,
+        learningMaterialID,
         correctAnswerTag as string,
         editors
       );
       alert("SUKSES MEMBUAT SOAL");
 
-      questionQuill?.setContents([]);
-      explanationQuill?.setContents([]);
-      firstAnswerChoiceQuill?.setContents([]);
-      secondAnswerChoiceQuill?.setContents([]);
-      thirdAnswerChoiceQuill?.setContents([]);
-      fourthAnswerChoiceQuill?.setContents([]);
-      fifthAnswerChoiceQuill?.setContents([]);
+      // questionQuill?.setContents([]);
+      // explanationQuill?.setContents([]);
+      // firstAnswerChoiceQuill?.setContents([]);
+      // secondAnswerChoiceQuill?.setContents([]);
+      // thirdAnswerChoiceQuill?.setContents([]);
+      // fourthAnswerChoiceQuill?.setContents([]);
+      // fifthAnswerChoiceQuill?.setContents([]);
     } catch (error) {
-      console.error("Error when parse base64 to blob: ", error);
+      console.error(new Error("Create Soal Error: ", { cause: error }));
       alert("GAGAL MEMBUAT SOAL");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -171,8 +187,8 @@ export default function Soal(): JSX.Element {
         </Accordion.Body>
       </Accordion.Item>
 
-      <Button type="submit" className="block mx-auto mt-6">
-        Buat Soal
+      <Button disabled={isLoading} type="submit" className="block mx-auto mt-6">
+        {isLoading ? "LOADING..." : "Buat Soal"}
       </Button>
     </Accordion>
   );
