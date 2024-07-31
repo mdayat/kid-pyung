@@ -99,13 +99,13 @@ function Soal(): JSX.Element {
       );
       alert("SUKSES MEMBUAT SOAL");
 
-      // questionQuill?.setContents([]);
-      // explanationQuill?.setContents([]);
-      // firstAnswerChoiceQuill?.setContents([]);
-      // secondAnswerChoiceQuill?.setContents([]);
-      // thirdAnswerChoiceQuill?.setContents([]);
-      // fourthAnswerChoiceQuill?.setContents([]);
-      // fifthAnswerChoiceQuill?.setContents([]);
+      questionQuill?.setContents([]);
+      explanationQuill?.setContents([]);
+      firstAnswerChoiceQuill?.setContents([]);
+      secondAnswerChoiceQuill?.setContents([]);
+      thirdAnswerChoiceQuill?.setContents([]);
+      fourthAnswerChoiceQuill?.setContents([]);
+      fifthAnswerChoiceQuill?.setContents([]);
     } catch (error) {
       console.error("Create Soal Error: ", error);
       alert("GAGAL MEMBUAT SOAL");

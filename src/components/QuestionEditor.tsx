@@ -53,7 +53,7 @@ export function QuestionEditor({
       try {
         const response = await (
           await fetch(
-            `http://localhost:3000/api/materials/${materialID}/learning-materials`
+            `${import.meta.env.VITE_BACKEND_URL}/api/materials/${materialID}/learning-materials`
           )
         ).json();
 

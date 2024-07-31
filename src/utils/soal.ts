@@ -59,7 +59,7 @@ async function createSoal(
   );
 
   const res = await fetch(
-    `http://localhost:3000/api/materials/${materialID}/learning-materials/${learningMaterialID}/questions`,
+    `${import.meta.env.VITE_BACKEND_URL}/api/materials/${materialID}/learning-materials/${learningMaterialID}/questions`,
     {
       method: "POST",
       body: formData,
