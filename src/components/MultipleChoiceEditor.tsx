@@ -5,7 +5,8 @@ import type Quill from "quill";
 import type { Dispatch, SetStateAction } from "react";
 
 import { RichTextEditor } from "./RichTextEditor";
-import { type DeltaOps, deltaToHTMLString } from "../utils/quill";
+import { deltaToHTMLString } from "../utils/quill";
+import type { DeltaOperation } from "../types/editor";
 
 interface MultipleChoiceEditorProps {
   answerChoices: {
@@ -25,7 +26,7 @@ export function MultipleChoiceEditor({
         ) as HTMLDivElement;
 
         const htmlString = deltaToHTMLString(
-          answerChoices[i].quillInstance.getContents().ops as DeltaOps
+          answerChoices[i].quillInstance.getContents().ops as DeltaOperation[]
         );
 
         divEl.insertAdjacentHTML("beforeend", htmlString);

@@ -1,4 +1,6 @@
-export function Home(): JSX.Element {
+import withAuth from "../hoc/withAuth";
+
+function Home(): JSX.Element {
   return (
     <>
       <div>
@@ -7,3 +9,7 @@ export function Home(): JSX.Element {
     </>
   );
 }
+
+const AuthenticatedHome = withAuth(Home);
+AuthenticatedHome.displayName = "Home";
+export default AuthenticatedHome;

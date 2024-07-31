@@ -10,7 +10,8 @@ async function createSoal(
   materialID: string,
   learningMaterialID: string,
   correctAnswerTag: string,
-  editors: Editor[]
+  editors: Editor[],
+  jwt: string
 ) {
   const combinedTaggedImages: TaggedImage[] = [];
   for (let i = 0; i < editors.length; i++) {
@@ -62,6 +63,9 @@ async function createSoal(
     {
       method: "POST",
       body: formData,
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
     }
   );
   if (res.status !== 201) {

@@ -5,6 +5,8 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type Quill from "quill";
 
 import { RichTextEditor } from "./RichTextEditor";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../lib/firebase";
 import { deltaToHTMLString } from "../utils/quill";
 import type { DeltaOperation } from "../types/editor";
 
@@ -44,7 +46,9 @@ export function QuestionEditor({
     }
   }
 
+  const [user, loading] = useAuthState(auth);
   useEffect(() => {
+    if (loading) return;
     (async () => {
       try {
         const response = await (
@@ -58,7 +62,7 @@ export function QuestionEditor({
         console.log(error);
       }
     })();
-  }, [materialID]);
+  }, [materialID, user, loading]);
 
   return (
     <Tabs
