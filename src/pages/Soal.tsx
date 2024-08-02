@@ -10,8 +10,8 @@ import { QuestionEditor } from "../components/QuestionEditor";
 import { ExplanationEditor } from "../components/ExplanationEditor";
 import { MultipleChoiceEditor } from "../components/MultipleChoiceEditor";
 // import withAuth from "../hoc/withAuth";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../lib/firebase";
+// import { useAuthState } from "react-firebase-hooks/auth";
+// import { auth } from "../lib/firebase";
 import { beforeUnloadHandler, createSoal } from "../utils/soal";
 import { editorSchema, type Editor, type TaggedDelta } from "../types/editor";
 
@@ -29,7 +29,7 @@ function Soal(): JSX.Element {
   const [fourthAnswerChoiceQuill, setFourthAnswerChoiceQuill] =
     useState<Quill>();
   const [fifthAnswerChoiceQuill, setFifthAnswerChoiceQuill] = useState<Quill>();
-  const [user] = useAuthState(auth);
+  // const [user] = useAuthState(auth);
 
   async function submitCreateSoalHandler(event: FormEvent<HTMLFormElement>) {
     setIsLoading(true);
@@ -86,16 +86,16 @@ function Soal(): JSX.Element {
     const taxonomyBloom = formData.get("taxonomy-bloom") as string;
 
     try {
-      if (!user) {
-        throw new Error("User is not authenticated");
-      }
+      // if (!user) {
+      //   throw new Error("User is not authenticated");
+      // }
       await createSoal(
         taxonomyBloom,
         MATERIAL_ID,
         learningMaterialID,
         correctAnswerTag as string,
-        editors,
-        await user.getIdToken()
+        editors
+        // await user.getIdToken()
       );
       alert("SUKSES MEMBUAT SOAL");
 
