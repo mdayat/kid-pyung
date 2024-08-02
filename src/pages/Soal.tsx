@@ -9,7 +9,7 @@ import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { QuestionEditor } from "../components/QuestionEditor";
 import { ExplanationEditor } from "../components/ExplanationEditor";
 import { MultipleChoiceEditor } from "../components/MultipleChoiceEditor";
-import withAuth from "../hoc/withAuth";
+// import withAuth from "../hoc/withAuth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../lib/firebase";
 import { beforeUnloadHandler, createSoal } from "../utils/soal";
@@ -200,4 +200,4 @@ function Soal(): JSX.Element {
   );
 }
 
-export default withAuth(Soal);
+export default Soal;
